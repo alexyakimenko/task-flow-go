@@ -35,8 +35,23 @@ services:
       - ./pgadmin-service/servers.json:/pgadmin4/servers.json
     depends_on:
       - auth-db-service
+  auth-cache-service:
+    build:
+      context: ./auth-cache-service
+      dockerfile: Dockerfile
+    container_name: auth-cache-service
+    secrets:
+      - auth-redis-pass
+      - auth-redis-acl
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - '${AUTH_REDIS_PORT}:${AUTH_REDIS_PORT}'
+    volumes:
+      - auth-cache-serviceVL:/var/vcap/store/redis
+      - ./auth-cache-service/redis.conf:/usr/local/etc/redis/redis.conf
 volumes:
   auth-db-service-VL:
+  auth-cache-serviceVL:
 
 secrets:
   auth-db-user:
@@ -47,3 +62,7 @@ secrets:
     file: auth-db-service/db.txt
   auth-db-url:
     file: auth-db-service/url.txt
+  auth-redis-pass:
+    file: auth-cache-service/pass.txt
+  auth-redis-acl:
+    file: auth-cache-service/users.acl
