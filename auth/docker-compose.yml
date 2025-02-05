@@ -1,0 +1,34 @@
+version: '3'
+services:
+# database service for auth service
+  auth-db-service:
+    build:
+      context: ./auth-db-service
+      dockerfile: Dockerfile
+    container_name: auth-db-service
+    secrets:
+      - auth-db-user
+      - auth-db-pass
+      - auth-db-db
+      - auth-db-url
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/auth-db-user
+      POSTGRES_PASSWORD_FILE: /run/secrets/auth-db-pass
+      POSTGRES_DB_FILE: /run/secrets/auth-db-db
+    ports:
+      - '${AUTH_POSTGRES_PORT}:${AUTH_POSTGRES_PORT}'
+    volumes:
+      -  auth-db-service-VL:/var/lib/postgresql/data 
+
+volumes:
+  auth-db-service-VL:
+
+secrets:
+  auth-db-user:
+    file: auth-db-service/user.txt
+  auth-db-pass:
+    file: auth-db-service/pass.txt
+  auth-db-db:
+    file: auth-db-service/db.txt
+  auth-db-url:
+    file: auth-db-service/url.txt
