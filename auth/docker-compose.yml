@@ -19,7 +19,22 @@ services:
       - '${AUTH_POSTGRES_PORT}:${AUTH_POSTGRES_PORT}'
     volumes:
       -  auth-db-service-VL:/var/lib/postgresql/data 
-
+  pgadmin:
+    build:
+      context: ./pgadmin-service
+      dockerfile: Dockerfile
+    container_name: pgadmin-service
+# load pgadmin defauld username and password to the environment.
+    env_file:
+      - ./pgadmin-service/.env
+    ports:
+      - "${PGADMIN_PORT}:${PGADMIN_CONTAINER_PORT}" 
+    secrets:
+      - auth-db-url
+    volumes:
+      - ./pgadmin-service/servers.json:/pgadmin4/servers.json
+    depends_on:
+      - auth-db-service
 volumes:
   auth-db-service-VL:
 
