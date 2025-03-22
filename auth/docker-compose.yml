@@ -16,9 +16,10 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/auth-db-pass
       POSTGRES_DB_FILE: /run/secrets/auth-db-db
     ports:
-      - '${AUTH_POSTGRES_PORT}:${AUTH_POSTGRES_PORT}'
+      - '${AUTH_POSTGRES_PORT}:5432'
     volumes:
-      -  auth-db-service-VL:/var/lib/postgresql/data 
+      -  auth-db-service-VL:/var/lib/postgresql/data
+      
   pgadmin:
     build:
       context: ./pgadmin-service
@@ -28,13 +29,14 @@ services:
     env_file:
       - ./pgadmin-service/.env
     ports:
-      - "${PGADMIN_PORT}:${PGADMIN_CONTAINER_PORT}" 
+      - "${PGADMIN_PORT}:80" 
     secrets:
       - auth-db-url
     volumes:
       - ./pgadmin-service/servers.json:/pgadmin4/servers.json
     depends_on:
       - auth-db-service
+
   auth-cache-service:
     build:
       context: ./auth-cache-service
@@ -45,10 +47,11 @@ services:
       - auth-redis-acl
     command: redis-server /usr/local/etc/redis/redis.conf
     ports:
-      - '${AUTH_REDIS_PORT}:${AUTH_REDIS_PORT}'
+      - '${AUTH_REDIS_PORT}:6379'
     volumes:
       - auth-cache-serviceVL:/var/vcap/store/redis
       - ./auth-cache-service/redis.conf:/usr/local/etc/redis/redis.conf
+
   auth-redis-commander-service:
     build:
       context: ./auth-redis-commander-service
@@ -59,15 +62,16 @@ services:
     secrets:
       - auth-redis-pass
     ports:
-      - ${AUTH_REDIS_COMMANDER_PORT}:${AUTH_REDIS_COMMANDER_PORT}
+      - ${AUTH_REDIS_COMMANDER_PORT}:8081
     environment:
       REDIS_HOST: auth-cache-service
-      REDIS_PORT: ${AUTH_REDIS_PORT}
+      REDIS_PORT: 6379
       REDIS_PASSWORD_FILE: /run/secrets/auth-redis-pass
     volumes:
       - redisCommanderVL:/data
     depends_on:
       - auth-cache-service
+      
 volumes:
   auth-db-service-VL:
   auth-cache-serviceVL:
